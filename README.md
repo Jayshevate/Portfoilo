@@ -4,6 +4,9 @@ My portfolio, told as one HTTP request travelling through a cloud system.
 You scroll, the request moves: edge → security gate → load balancer → five
 project "services" → data layer → back to you as a `200 OK`.
 
+**Preview:** [`preview/life-of-a-request-preview.mp4`](preview/life-of-a-request-preview.mp4)
+(60 s scroll-through, recorded headless without a GPU, so it's choppier than the real thing).
+
 It's drawn like pages from a field notebook: manila paper, graphite text,
 blue ballpoint for the 3D drawings, red pen for the request itself, and a
 highlighter I only use on facts I can prove (scores, dates).
