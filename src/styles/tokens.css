@@ -1,0 +1,29 @@
+/*
+ * Design tokens.
+ *
+ * The idea: this portfolio is my field notebook. Manila paper, graphite for
+ * writing, a blue ballpoint for the drawings, a red pen for the one thing
+ * that matters (the request), and a yellow highlighter I'm only allowed to
+ * use on facts I can prove (scores, dates).
+ */
+:root {
+  --paper: #ece3d0;        /* manila */
+  --paper-2: #f4eddd;      /* a fresh page taped on top */
+  --paper-3: #e2d7c0;      /* pencil-smudged well */
+  --ink: #2b2a28;          /* graphite, for text */
+  --ink-2: #4a4740;
+  --faded: #8f8676;        /* soft pencil */
+  --pen: #2a44a8;          /* blue ballpoint: drawings and links */
+  --accent: #c8372d;       /* red pen: the request, live state */
+  --hl: #f3df57;           /* highlighter */
+
+  --display: 'Young Serif', Georgia, serif;
+  --mono: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --gutter: clamp(16px, 4vw, 64px);
+  --line: 1px solid color-mix(in srgb, var(--faded) 55%, transparent);
+  --shadow: 3px 4px 0 rgb(43 42 40 / 0.14);
+
+  color-scheme: light;
+}
