@@ -183,3 +183,14 @@ html.is-simple .sheet__tape { display: none; }
   .sheet__body { margin-left: 10px; padding-left: 14px; }
   .sheet { rotate: calc(var(--tilt, 0deg) * 0.5); }
 }
+
+/* ---------- optional media (only shows once profile.js has it) ---------- */
+.shots { list-style: none; padding: 0; margin: 16px 0 4px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.shots img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border: 1.5px solid var(--ink); background: var(--paper-3); }
+.shots li:nth-child(odd) img { rotate: -1deg; }
+.shots li:nth-child(even) img { rotate: 0.8deg; }
+.polaroid { float: right; width: 112px; margin: 0 0 10px 14px; padding: 6px 6px 18px; background: #fbf8f1; box-shadow: var(--shadow); rotate: 3deg; }
+.polaroid img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; filter: grayscale(0.2) sepia(0.15); }
+.repos__h { font-size: 20px; margin: 20px 0 6px; }
+.repos { padding-left: 18px; margin: 0; }
+.repos li { padding: 3px 0; color: var(--ink-2); }

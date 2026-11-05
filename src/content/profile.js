@@ -21,6 +21,8 @@ export const profile = {
   // Lines drawn by the hero particles. Kept short so it fits on a phone.
   particleName: ['JAYKUMAR', 'SHEVATE'],
   location: 'Pune, Maharashtra, India',
+  // Optional. Put the image in /public (e.g. /me.jpg). null = no photo shown.
+  photo: null,
   role: 'Teaching Associate, D. Y. Patil International University',
   targeting: ['cloud', 'backend', 'junior DevOps', 'security'],
   freelance: true,
@@ -114,6 +116,8 @@ export const profile = {
       stack: fill('stack'),
       repo: fill('repo link'),
       demo: fill('demo link'),
+      // Optional: [{ src: '/shots/name-1.webp', alt: 'what the screenshot shows' }]
+      screenshots: [],
     },
     {
       slug: 'rentflow',
@@ -127,6 +131,8 @@ export const profile = {
       stack: fill('stack'),
       repo: fill('repo link'),
       demo: fill('demo link'),
+      // Optional: [{ src: '/shots/name-1.webp', alt: 'what the screenshot shows' }]
+      screenshots: [],
     },
     {
       slug: 'sensorium',
@@ -140,6 +146,8 @@ export const profile = {
       stack: fill('stack'),
       repo: fill('repo link'),
       demo: fill('demo link'),
+      // Optional: [{ src: '/shots/name-1.webp', alt: 'what the screenshot shows' }]
+      screenshots: [],
     },
     {
       slug: 'bazaarlens',
@@ -153,6 +161,8 @@ export const profile = {
       stack: fill('stack'),
       repo: fill('repo link'),
       demo: fill('demo link'),
+      // Optional: [{ src: '/shots/name-1.webp', alt: 'what the screenshot shows' }]
+      screenshots: [],
     },
     {
       slug: 'phd-erp',
@@ -166,8 +176,13 @@ export const profile = {
       stack: fill('stack'),
       repo: fill('repo link, or "private"'),
       demo: fill('demo link'),
+      // Optional: [{ src: '/shots/name-1.webp', alt: 'what the screenshot shows' }]
+      screenshots: [],
     },
   ],
+
+  // Optional: other repos to feature. [{ name, url, line }] — hidden while empty.
+  otherRepos: [],
 
   skills: [
     { group: 'Cloud', items: ['AWS', 'Azure AI', fill('exact services used')] },

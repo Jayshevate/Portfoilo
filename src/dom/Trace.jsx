@@ -5,7 +5,7 @@
  */
 import { STOPS } from '../core/route'
 import { useStore } from '../core/store'
-import { scrollToStop } from '../core/scroll'
+import { scrollToStop } from '../core/nav'
 
 export default function Trace() {
   const active = useStore((s) => s.activeStop)

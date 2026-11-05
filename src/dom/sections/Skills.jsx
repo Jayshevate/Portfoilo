@@ -20,6 +20,18 @@ export default function Skills() {
             ))}
           </tbody>
         </table>
+        {profile.otherRepos.length > 0 && (
+          <>
+            <h3 className="repos__h">Also on GitHub</h3>
+            <ul className="repos">
+              {profile.otherRepos.map((r) => (
+                <li key={r.url}>
+                  <a href={r.url} target="_blank" rel="noreferrer">{r.name}</a> · {r.line}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </Sheet>
     </Stop>
   )

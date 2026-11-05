@@ -4,13 +4,14 @@
  *  - The content (all the <section>s) is the same in both modes.
  *  - "experience": tall sticky sections + the lazy-loaded 3D canvas behind.
  *  - "simple": normal-height sections, no canvas, no smooth scroll. Chosen
- *    automatically for ?simple, no WebGL, or prefers-reduced-motion.
+ *    automatically for ?simple, no WebGL, or prefers-reduced-motion (that
+ *    choice is made by a tiny inline script in index.html, before paint).
  */
-import { Suspense, lazy, useEffect, useLayoutEffect } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { profile } from './content/profile'
 import { useStore } from './core/store'
 import { quality } from './core/quality'
-import { destroyScroll, initScroll } from './core/scroll'
+import { loadScroll } from './core/nav'
 import { setSound } from './core/sound'
 import TopBar from './dom/TopBar'
 import Trace from './dom/Trace'
@@ -25,25 +26,40 @@ import Contact from './dom/sections/Contact'
 
 const Experience = lazy(() => import('./canvas/Experience'))
 
-const params = new URLSearchParams(location.search)
-const startSimple = params.has('simple') || !quality.webgl || (quality.reducedMotion && !params.has('3d'))
+// GSAP + Lenis live in their own chunk (core/scroll.js); this holds it once loaded.
+let scrollMod = null
+
+/*
+ * Wait until the page has painted and the browser is idle before starting the
+ * 3D download. The text is readable first; the world fades in after.
+ */
+function useAfterFirstPaint(enabled) {
+  const [ok, setOk] = useState(false)
+  useEffect(() => {
+    if (!enabled) return
+    const idle = window.requestIdleCallback || ((f) => setTimeout(f, 200))
+    const start = () => idle(() => setOk(true), { timeout: 1500 })
+    if (document.readyState === 'complete') start()
+    else window.addEventListener('load', start, { once: true })
+    return () => window.removeEventListener('load', start)
+  }, [enabled])
+  return ok
+}
+
 
 export default function App() {
   const mode = useStore((s) => s.mode)
   const ready = useStore((s) => s.canvasReady)
   const setMode = useStore((s) => s.setMode)
   const simple = mode === 'simple'
-
-  useLayoutEffect(() => {
-    if (startSimple) setMode('simple')
-  }, [setMode])
+  const show3d = useAfterFirstPaint(!simple) && !simple
 
   // (Re)build scroll handling whenever the layout changes between modes.
   useEffect(() => {
     window.scrollTo(0, 0)
     document.documentElement.classList.toggle('is-simple', simple)
     if (simple) {
-      destroyScroll()
+      scrollMod?.destroyScroll()
       useStore.getState().setCanvasReady(false)
       if (useStore.getState().sound) {
         setSound(false)
@@ -51,8 +67,15 @@ export default function App() {
       }
       return
     }
-    initScroll({ smooth: !quality.reducedMotion })
-    return destroyScroll
+    let alive = true
+    loadScroll().then((m) => {
+      scrollMod = m
+      if (alive) m.initScroll({ smooth: !quality.reducedMotion })
+    })
+    return () => {
+      alive = false
+      scrollMod?.destroyScroll()
+    }
   }, [simple])
 
   useEffect(() => {
@@ -66,7 +89,7 @@ export default function App() {
         {simple ? 'Play the 3D version' : 'Skip the animation: simple view'}
       </button>
       <TopBar />
-      {!simple && (
+      {show3d && (
         <Suspense fallback={null}>
           <Experience />
         </Suspense>

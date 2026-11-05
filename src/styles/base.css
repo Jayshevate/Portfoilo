@@ -161,3 +161,7 @@ html.is-simple .cursor { display: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* The world fades in once it has loaded, instead of popping in. */
+.canvas-wrap { animation: world-in 1.4s var(--ease) both; }
+@keyframes world-in { from { opacity: 0; } }

@@ -1,5 +1,5 @@
 import { useStore } from '../core/store'
-import { scrollToStop } from '../core/scroll'
+import { scrollToStop } from '../core/nav'
 import Magnetic from './Magnetic'
 import SoundToggle from './SoundToggle'
 

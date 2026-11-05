@@ -39,6 +39,18 @@ export default function Project({ p, no }) {
           <LinkOrFill v={p.repo} label="repo" />
           <LinkOrFill v={p.demo} label="demo" />
         </div>
+        {/* Screenshots are optional; nothing renders until profile.js lists some. */}
+        {p.screenshots?.length > 0 && (
+          <ul className="shots">
+            {p.screenshots.map((s) => (
+              <li key={s.src}>
+                <a href={s.src} target="_blank" rel="noreferrer">
+                  <img src={s.src} alt={s.alt} loading="lazy" decoding="async" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </Sheet>
     </Stop>
   )

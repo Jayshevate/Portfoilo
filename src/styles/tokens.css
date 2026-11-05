@@ -12,9 +12,9 @@
   --paper-3: #e2d7c0;      /* pencil-smudged well */
   --ink: #2b2a28;          /* graphite, for text */
   --ink-2: #4a4740;
-  --faded: #8f8676;        /* soft pencil */
+  --faded: #676052;        /* soft pencil (dark enough for 4.5:1 on paper) */
   --pen: #2a44a8;          /* blue ballpoint: drawings and links */
-  --accent: #c8372d;       /* red pen: the request, live state */
+  --accent: #b3312a;       /* red pen: the request, live state (4.5:1 for small text) */
   --hl: #f3df57;           /* highlighter */
 
   --display: 'Young Serif', Georgia, serif;

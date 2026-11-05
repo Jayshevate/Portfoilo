@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { profile, plain } from '../content/profile'
 import { useStore } from '../core/store'
-import { scrollToStop } from '../core/scroll'
+import { scrollToStop } from '../core/nav'
 
 const slugs = profile.projects.map((p) => p.slug)
 
@@ -15,6 +15,7 @@ const COMMANDS = {
   help: () => [
     'whoami            who is on the other end',
     'ls projects       list services',
+    'ls repos          other repos worth a look',
     'open <project>    fly to a project (tab completes)',
     'certs             credentials',
     'contact           how to reach me',
@@ -29,10 +30,12 @@ const COMMANDS = {
     `${profile.education.degree}, ${profile.education.year}`,
     `looking for: ${profile.targeting.join(' / ')} roles${profile.freelance ? ' · open to freelance' : ''}`,
   ],
-  ls: (arg) =>
-    arg === 'projects' || !arg
-      ? profile.projects.map((p) => `${p.slug.padEnd(12)} ${p.kind}`)
-      : [`ls: ${arg}: no such directory. try: ls projects`],
+  ls: (arg) => {
+    if (arg === 'projects' || !arg) return profile.projects.map((p) => `${p.slug.padEnd(12)} ${p.kind}`)
+    if (arg === 'repos')
+      return profile.otherRepos.length ? profile.otherRepos.map((r) => `${r.name.padEnd(18)} ${r.url}`) : ['(nothing here yet)']
+    return [`ls: ${arg}: no such directory. try: ls projects, ls repos`]
+  },
   open: (arg) => {
     const p = profile.projects.find((x) => x.slug === arg || x.name.toLowerCase() === arg)
     if (!p) return [`open: unknown project "${arg ?? ''}". try: ${slugs.join(', ')}`]

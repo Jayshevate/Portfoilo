@@ -31,11 +31,16 @@ Nothing is deployed. There's no backend.
 
 All facts live in **`src/content/profile.js`**. Anything I haven't written yet
 is wrapped in `fill('...')` and shows up on the page as a red circled
-`[FILL: ...]` note, so nothing gets made up. To find what's left:
+`[FILL: ...]` note, so nothing gets made up. To list what's left:
 
 ```bash
-grep -n "fill(" src/content/profile.js
+npm run todo
 ```
+
+Optional extras in the same file stay hidden until they're filled in:
+`photo` (shows as a taped polaroid on the About page), `screenshots` on each
+project (a small strip under the links), and `otherRepos` (listed under the
+skills, and in the terminal as `ls repos`).
 
 What's still missing: GitHub / LinkedIn / email / resume links, cert
 verification links, what I did in each role, and for each project its status,
@@ -162,8 +167,17 @@ they aren't data from the real systems.
 
 ### 8. Performance
 
-- **The HTML paints first.** The whole 3D canvas is a `React.lazy` chunk, so
-  three.js (≈176 KB gzipped) downloads after the text is already readable.
+- **Text before JavaScript.** A small Vite plugin in `vite.config.js` writes
+  the hero (built from `profile.js`) straight into `index.html`, so a slow phone
+  shows real text before any JS arrives. React replaces it with identical
+  markup, so nothing moves.
+- **The view is chosen before paint.** A few lines of inline script in
+  `index.html` decide simple vs 3D (`?simple`, no WebGL, reduced motion) and set
+  a class on `<html>`, so the layout never switches after it has been drawn.
+- **The 3D waits its turn.** The canvas is a `React.lazy` chunk that only
+  starts downloading after the page has loaded and the browser is idle. GSAP +
+  Lenis are a separate chunk too (`core/nav.js` loads them on demand), so the
+  simple view never downloads them unless you click a nav link.
 - **Each scene is its own chunk** (0.5 to 2 KB each). Only the active stop, one
   behind and two ahead are mounted; the next ones are prefetched.
 - **No models, no textures.** Everything is built from code (lines, a few
@@ -177,8 +191,18 @@ they aren't data from the real systems.
   particles, no antialiasing and fewer animated objects. There's no
   post-processing anywhere.
 
-Current production build: about 105 KB gzipped of JS for first paint, plus
-about 220 KB for the 3D chunks that load after it.
+Current production build: about 56 KB gzipped of JS for first paint, then
+about 49 KB (scroll) and 230 KB (3D) loaded after it.
+
+Lighthouse 12, measured here on a server **without a GPU** (WebGL runs on the
+CPU, which inflates "total blocking time" in the 3D view):
+
+| | Performance | Accessibility | Best practices | SEO | First paint (slow 4G phone) | Layout shift |
+|---|---|---|---|---|---|---|
+| 3D view | 60 | 100 | 100 | 100 | 2.9 s | 0 |
+| Simple view | 88 | 100 | 100 | 100 | 3.0 s | 0.01 |
+
+The 60fps target still needs checking on a real laptop with a graphics card.
 
 ### 9. Accessibility and the simple view
 

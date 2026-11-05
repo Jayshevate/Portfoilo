@@ -54,8 +54,10 @@
   font-size: clamp(60px, 12vw, 180px); line-height: 0.88; margin: 6px 0 22px;
   letter-spacing: -0.02em;
 }
-/* Once the particles have drawn the name, the HTML heading steps aside visually (it stays for SEO/AT). */
-html.canvas-ready .hero__title {
+/* In the 3D view the particles draw the name, so the HTML heading is visually
+   hidden from the start (hiding it later would make the page jump). It stays in
+   the DOM for search engines and screen readers. The simple view shows it. */
+html:not(.is-simple) .hero__title {
   position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 }
 .hero__line { font-family: var(--display); font-size: clamp(22px, 1.9vw, 28px); line-height: 1.15; max-width: 30ch; color: var(--ink); }
@@ -153,3 +155,9 @@ html.is-simple .grain { opacity: 0.05; }
   .contact .sheet { max-height: none; }
   .stop--simple .sheet { max-height: none; }
 }
+
+/* ---------- pre-rendered hero (index.html, before React mounts) ---------- */
+.shell { height: var(--shell-h, 230vh); }
+html.is-simple .shell-main { max-width: 860px; margin: 0 auto; padding: 84px var(--gutter) 0; }
+html.is-simple .shell { height: auto; padding: 6vh 0 2vh; }
+html.is-simple .shell .stop__sticky { position: static; height: auto; padding: 0; display: block; }

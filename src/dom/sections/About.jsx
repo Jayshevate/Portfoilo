@@ -8,6 +8,11 @@ export default function About() {
     <Stop id="lb" className="panel-left" labelledBy="about-title">
       <Sheet no={2} title="LOAD BALANCER">
         <p className="kicker">step 02 · routing</p>
+        {profile.photo && (
+          <figure className="polaroid">
+            <img src={profile.photo} alt={`Photo of ${profile.displayName}`} loading="lazy" decoding="async" />
+          </figure>
+        )}
         <h2 id="about-title">Where my time gets routed right now.</h2>
         <p className="lede">
           Three servers, one hub. I'm finishing a B.Tech in CSE with a Cyber Security specialisation at

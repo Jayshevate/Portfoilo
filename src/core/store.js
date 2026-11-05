@@ -11,7 +11,8 @@
 import { create } from 'zustand'
 
 export const useStore = create((set) => ({
-  mode: 'experience', // 'experience' | 'simple'
+  // 'experience' | 'simple'. The inline script in index.html decides first.
+  mode: typeof document !== 'undefined' && document.documentElement.classList.contains('is-simple') ? 'simple' : 'experience',
   setMode: (mode) => set({ mode }),
 
   canvasReady: false,
