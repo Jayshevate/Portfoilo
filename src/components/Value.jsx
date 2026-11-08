@@ -7,7 +7,7 @@ import { isFill } from '../content/profile'
 export default function Value({ v }) {
   if (isFill(v))
     return (
-      <span className="whitespace-nowrap rounded-sm border border-dashed border-missing/70 px-1.5 font-mono text-[0.8em] text-missing">
+      <span className="rounded-sm border border-dashed border-missing/70 px-1.5 font-mono text-[0.8em] text-missing [overflow-wrap:anywhere] [box-decoration-break:clone]">
         missing: {v.fill}
       </span>
     )

@@ -6,6 +6,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
+  // hover: styles only on devices that can hover. On phones a tap would
+  // otherwise leave cards lifted and shift tap targets under the finger.
+  future: { hoverOnlyWhenSupported: true },
   theme: {
     extend: {
       colors: {

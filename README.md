@@ -16,6 +16,15 @@ showing" numerals. All of it switches off under `prefers-reduced-motion`.
 The idea: recruiters already know how to use a streaming app. They find what
 they need in seconds, and the site is still memorable.
 
+**For recruiters: the 60-second brief.** Right under the billboard (for
+recruiters; after the rows for everyone else):
+- **Why me for…** each target role, with only the facts that back it. A role
+  with no evidence yet says "missing" instead of being padded.
+- **Logistics:** location, start date, work mode, work authorization.
+- **Act:** email me, download the résumé, or **copy a clean plain-text summary**
+  to paste into an applicant-tracking system. The copied summary leaves out
+  anything not filled in yet.
+
 ```bash
 npm install
 npm run dev        # http://localhost:5173
@@ -62,7 +71,7 @@ npm run test:load  # 200 parallel connections against the build
 If Playwright can't find a browser on your machine:
 `npx playwright install chromium`.
 
-**Unit tests** (`tests/unit/`, 19 tests)
+**Unit tests** (`tests/unit/`, 22 tests)
 
 - `facts.test.js`: every score, date, title and employer must match the
   resume exactly. If someone edits a number by mistake, this fails.
@@ -71,9 +80,13 @@ If Playwright can't find a browser on your machine:
 - `render.test.jsx`: renders the whole page the way the build does and fails
   on `undefined`, `NaN`, `[object Object]` or `null` anywhere in the text.
 - `storage.test.js`: the site still works when the browser blocks storage.
+- `brief.test.js`: every "why me" proof is built from text already in
+  `profile.js`, and the ATS summary has no placeholders or garbage.
 
-**Browser tests** (`tests/e2e/run.mjs`, 16 scenarios, real Chromium)
+**Browser tests** (`tests/e2e/run.mjs`, 17 scenarios, real Chromium)
 
+- the recruiter brief comes first, and "Copy summary" puts a clean profile on
+  the clipboard
 - the viewer picker sets the order of the rows and is remembered
 - all 17 titles open, show no rendering garbage, close with Esc, and return
   keyboard focus to the card
@@ -84,7 +97,8 @@ If Playwright can't find a browser on your machine:
 - keyboard: first Tab is "Skip to the catalogue"; dialogs keep focus inside
 - **axe-core WCAG 2.1 AA scan** of the picker, home, a title page and the
   trailer: zero violations
-- phone viewport: no sideways scrolling
+- phone viewport: no sideways scrolling (this caught long "missing" tags
+  widening the page)
 - reduced motion: zero running animations, and the trailer doesn't auto-advance
 - blocked storage, and **JavaScript turned off** (all content still readable)
 - **25 visitors at once**, in parallel browser contexts: each gets the right
@@ -176,12 +190,14 @@ No image downloads at all.
 src/
   content/profile.js     every fact (the only file to edit for content)
   content/catalog.js     titles, rows, viewers, search
+  content/brief.js       role fit + ATS summary (facts mapped, never added)
   lib/storage.js         localStorage that never throws
   lib/hash.js            #title=id ⇄ open title
   components/
     Gate.jsx             "Who's here?"
     NavBar.jsx           wordmark, sections, search ("/"), résumé, viewer
-    Billboard.jsx        hero + drifting poster wall
+    Billboard.jsx        hero + drifting poster wall + highlights ticker
+    Brief.jsx            the recruiter's 60-second brief
     Row.jsx · TitleCard.jsx · Art.jsx
     TitlePage.jsx        the title dialog (facts, episodes, more like this)
     Trailer.jsx          the 7-shot trailer (2.8 s a shot)

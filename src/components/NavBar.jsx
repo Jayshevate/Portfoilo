@@ -7,6 +7,7 @@ import { profile, real } from '../content/profile'
 import { VIEWERS } from '../content/catalog'
 
 const LINKS = [
+  ['#brief', 'Brief'],
   ['#row-projects', 'Projects'],
   ['#row-credentials', 'Credentials'],
   ['#row-experience', 'Experience'],

@@ -71,6 +71,26 @@ const tests = {
     await ctx.close()
   },
 
+  async 'recruiter brief: shown first, role fit + logistics, copies a clean summary'(b) {
+    const { ctx, page } = await visitor(b)
+    await ctx.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.goto(BASE)
+    await page.getByRole('button', { name: /Recruiter/ }).click()
+    const brief = page.locator('#brief')
+    await brief.waitFor()
+    const briefTop = await brief.evaluate((e) => e.getBoundingClientRect().top + scrollY)
+    const rowTop = await page.locator('#row-credentials').evaluate((e) => e.getBoundingClientRect().top + scrollY)
+    assert(briefTop < rowTop, 'brief should come before the rows for recruiters')
+    const text = await brief.innerText()
+    for (const s of ['CLOUD', 'BACKEND', 'SECURITY', 'JUNIOR DEVOPS', '1000/1000', 'Logistics'.toUpperCase()])
+      assert(text.toUpperCase().includes(s), `brief is missing ${s}`)
+    await page.getByRole('button', { name: /Copy summary/ }).click()
+    await page.getByRole('button', { name: /Copied/ }).waitFor()
+    const clip = await page.evaluate(() => navigator.clipboard.readText())
+    assert(clip.startsWith('Jaykumar Chandrakant Shevate') && clip.includes('1000/1000') && !clip.includes('missing'), `bad summary: ${clip.slice(0, 120)}`)
+    await ctx.close()
+  },
+
   async 'engineer gets projects first; switching viewer works'(b) {
     const { ctx, page } = await visitor(b)
     await page.goto(BASE)
@@ -273,7 +293,7 @@ const tests = {
     await page.goto(BASE)
     assert(!(await page.locator('[data-gate]').isVisible()), 'gate blocks the page without JS')
     const text = await visibleText(page)
-    for (const s of ['Jaykumar Shevate', '1000/1000', '929/1000', 'CarePilot', 'Teaching Associate', 'Roll credits'])
+    for (const s of ['Jaykumar Shevate', '1000/1000', '929/1000', 'CarePilot', 'Teaching Associate', 'Roll credits', '60-second brief'])
       assert(text.includes(s) || text.toUpperCase().includes(s.toUpperCase()), `missing "${s}" without JS`)
     await ctx.close()
   },

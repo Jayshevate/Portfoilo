@@ -23,6 +23,7 @@ import Gate from './components/Gate'
 import TitlePage from './components/TitlePage'
 import Trailer from './components/Trailer'
 import Credits from './components/Credits'
+import Brief from './components/Brief'
 import TitleCard from './components/TitleCard'
 
 const MAX_RECENT = 8
@@ -124,9 +125,12 @@ export default function App() {
               <>
                 {ready && <Row id="mylist" name="My list" note="saved in your browser only" titles={list(saved)} onOpen={openTitle} savedIds={saved} />}
                 {ready && <Row id="recent" name="Continue watching" titles={list(recent)} onOpen={openTitle} savedIds={saved} />}
+                {/* Recruiters get the brief first; everyone else after the rows they came for. */}
+                {viewer !== 'engineer' && viewer !== 'curious' && <Brief />}
                 {rows.map((key) => (
                   <Row key={key} id={key} name={ROWS[key].name} numbered={key === 'projects'} note={key === 'projects' ? 'now showing' : undefined} titles={list(ROWS[key].ids)} onOpen={openTitle} savedIds={saved} />
                 ))}
+                {(viewer === 'engineer' || viewer === 'curious') && <Brief />}
               </>
             )}
           </div>

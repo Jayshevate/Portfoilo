@@ -19,6 +19,12 @@ export const profile = {
   role: 'Teaching Associate, D. Y. Patil International University',
   targeting: ['cloud', 'backend', 'junior DevOps', 'security'],
   freelance: true,
+
+  // What recruiters screen for first. Fill these in; until then the brief
+  // shows them as missing (and the copied summary leaves them out).
+  availability: fill('start date'), // e.g. 'July 2026, after graduation'
+  workMode: fill('on-site / hybrid / remote'), // and whether I'd relocate
+  workAuthorization: fill('work authorization'), // e.g. 'Indian citizen'
   spoken: ['English', 'Hindi', 'Marathi'],
   learning: ['German', 'Japanese', 'Russian'],
 
