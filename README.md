@@ -1,277 +1,191 @@
-# Life of a Request
+# Jaykumar Shevate · on demand
 
-My portfolio, told as one HTTP request travelling through a cloud system.
-You scroll, the request moves: edge → security gate → load balancer → five
-project "services" → data layer → back to you as a `200 OK`.
+My portfolio, built as a streaming catalogue. You pick who's watching
+(recruiter, engineer, just looking), get a billboard with the essentials,
+then rows of "titles": projects, credentials, experience and the stack.
+Every title opens into its own page with "episodes" (problem → architecture
+→ stack → my part). The trailer is a 25-second cut of the facts. The end
+credits are the contact page.
 
-**Preview:** [`preview/life-of-a-request-preview.mp4`](preview/life-of-a-request-preview.mp4)
-(60 s scroll-through, recorded headless without a GPU, so it's choppier than the real thing).
-
-It's drawn like pages from a field notebook: manila paper, graphite text,
-blue ballpoint for the 3D drawings, red pen for the request itself, and a
-highlighter I only use on facts I can prove (scores, dates).
+The idea: recruiters already know how to use a streaming app. They find what
+they need in seconds, and the site is still memorable.
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm run build      # production build into dist/
-npm run preview    # serve that build locally
 ```
 
-Useful URLs while developing:
-
-- `/?simple` forces the simple, no-3D view (what recruiters in a hurry get)
-- `/?3d` forces the 3D version even if the OS asks for reduced motion
-
-Nothing is deployed. There's no backend.
+Nothing is deployed and there's no backend. The build is plain static files
+that any static host can serve.
 
 ---
 
-## Before this goes in front of anyone: fill in the blanks
+## Before sending the link to anyone
 
 All facts live in **`src/content/profile.js`**. Anything I haven't written yet
-is wrapped in `fill('...')` and shows up on the page as a red circled
-`[FILL: ...]` note, so nothing gets made up. To list what's left:
+is `fill('...')` and shows on the site as a red dashed **missing: …** tag, so
+nothing gets made up.
 
 ```bash
-npm run todo
+npm run todo       # lists every missing fact
 ```
 
-Optional extras in the same file stay hidden until they're filled in:
-`photo` (shows as a taped polaroid on the About page), `screenshots` on each
-project (a small strip under the links), and `otherRepos` (listed under the
-skills, and in the terminal as `ls repos`).
-
-What's still missing: GitHub / LinkedIn / email / resume links, cert
-verification links, what I did in each role, and for each project its status,
-role, problem, architecture, stack, and repo/demo links. The tagline and the
-contact call-to-action are drafts written from resume facts; I should rewrite
-them in my own words.
-
-- **Resume PDF:** drop it in `public/` (e.g. `public/Jaykumar-Shevate-Resume.pdf`)
-  and set `links.resume` to `'/Jaykumar-Shevate-Resume.pdf'`.
+- **Resume PDF:** put it in `public/`, then set `links.resume` to e.g.
+  `'/Jaykumar-Shevate-Resume.pdf'`. The Résumé button then appears in the
+  top bar and in the credits.
 - **Contact form:** get a free key at https://web3forms.com, copy
-  `.env.example` to `.env.local` and paste it in as `VITE_WEB3FORMS_KEY`. Until
-  then the form tells visitors it isn't wired up, rather than pretending to send.
+  `.env.example` to `.env.local` and set `VITE_WEB3FORMS_KEY`. Until then the
+  form says it isn't connected; it never pretends to send.
+- **Screenshots:** add `screenshots: [{ src: '/shots/x.webp', alt: '…' }]`
+  to a project and they appear on its page.
+- The tagline and the call-to-action (`cta`) are drafts. Rewrite them in your
+  own words.
 
 ---
 
-## How it works (the version I'd give in an interview)
+## Checking it
 
-### 1. One number drives everything
+```bash
+npm run check      # everything below, in order
+npm test           # unit tests (Vitest)
+npm run build      # production build + pre-render
+npm run test:e2e   # browser tests (Playwright + axe), against the build
+npm run test:load  # 200 parallel connections against the build
+```
 
-`src/core/scroll.js`
+If Playwright can't find a browser on your machine:
+`npx playwright install chromium`.
 
-The page is a stack of real HTML `<section>`s, one per stop. Each is tall
-(height comes from `vh` in `src/core/route.js`), and its panel is
-`position: sticky`, so the text stays still while you scroll "through" it.
+**Unit tests** (`tests/unit/`, 19 tests)
 
-- **Lenis** smooths wheel scrolling (inertia, with my own easing curve in
-  `src/core/ease.js`) but still uses native scroll, so keyboard, scrollbar,
-  find-in-page and screen readers all keep working.
-- **GSAP ScrollTrigger** watches every `[data-stop]` section and reports its
-  progress from 0 to 1. Those numbers go into a plain object, `scroll.local`.
-- GSAP's ticker drives Lenis, so there's exactly one animation clock.
+- `facts.test.js`: every score, date, title and employer must match the
+  resume exactly. If someone edits a number by mistake, this fails.
+- `catalog.test.js`: unique ids, every viewer's rows exist, search only finds
+  real words (e.g. "kubernetes" finds nothing, because it isn't on the resume).
+- `render.test.jsx`: renders the whole page the way the build does and fails
+  on `undefined`, `NaN`, `[object Object]` or `null` anywhere in the text.
+- `storage.test.js`: the site still works when the browser blocks storage.
 
-`scroll` is deliberately **not** React state (`src/core/store.js`). It changes
-on every scroll event; putting it in state would re-render the whole app 60
-times a second. The 3D code just reads it inside `useFrame`. Things that change
-rarely (which stop is active, terminal open, sound on) live in a small
-**zustand** store.
+**Browser tests** (`tests/e2e/run.mjs`, 15 scenarios, real Chromium)
 
-### 2. The camera rides a spline
+- the viewer picker sets the order of the rows and is remembered
+- all 17 titles open, show no rendering garbage, close with Esc, and return
+  keyboard focus to the card
+- shared links (`#title=carepilot`) open straight to the title (no picker),
+  Back closes it, and unknown ids are ignored
+- search, My list, Continue watching, the trailer (play, pause, step, close)
+- the contact form enforces its fields and never fakes success
+- keyboard: first Tab is "Skip to the catalogue"; dialogs keep focus inside
+- **axe-core WCAG 2.1 AA scan** of the picker, home, a title page and the
+  trailer: zero violations
+- phone viewport: no sideways scrolling
+- blocked storage, and **JavaScript turned off** (all content still readable)
+- **25 visitors at once**, in parallel browser contexts: each gets the right
+  rows and their own My list, with no errors
 
-`src/core/route.js`, `src/canvas/CameraRig.jsx`
+**Load test** (`tests/load/run.mjs`): 200 parallel connections for 10 s on
+the page and on the main script. Last run: about 9,800 page requests and
+43,000 script requests, **0 errors, 0 timeouts, 0 non-200**, p99 latency
+274 ms and 63 ms. That's on `vite preview`, a dev-grade server; a real static
+host or CDN does better.
 
-Every stop has a camera position and a look-at point. Two Catmull-Rom curves
-run through them. Stop *k* sits exactly at parameter `k / (N-1)`, so
-"progress inside section k" turns into "how far from stop k to stop k+1" via
-a per-stop easing:
+Why many recruiters at once is safe: there is no server code and no shared
+state. Every visitor downloads the same static files; "My list", "Continue
+watching" and the viewer choice live in that visitor's own browser. The only
+outside call is the contact form, and each submission is independent.
 
-- `hero`: hold still while the name dissolves, then leave
-- `linear`: keep moving (the security gate is a fly-through)
-- `dwell`: drift slightly while you read, then travel in the last third
+**Lighthouse 12** (measured locally):
 
-The rig doesn't jump to the target. It damps toward it (`1 - exp(-λ·dt)`, so
-it's frame-rate independent), which adds a second layer of inertia on top of
-Lenis. The mouse adds a little parallax.
-
-To keep the 3D scene out from under the text panel, I don't move the camera.
-I shift the **projection** with `camera.setViewOffset`: on desktop the world
-renders right of centre, on phones it renders higher up.
-
-### 3. The hero: text made of particles (custom GLSL #1)
-
-`src/canvas/ParticleText.jsx`, `src/canvas/shaders/particles.vert`
-
-1. Draw my name with the real web font onto a hidden 2D canvas.
-2. Read the pixels back and keep the inked ones.
-3. Pick N of them at random. Those are the particle positions.
-
-Each particle carries three positions as attributes: scattered, in the name,
-and on a sphere (the packet). The vertex shader blends scattered → name over
-time when the page loads, then name → packet as you scroll. Each particle
-starts at a slightly different moment (`aRand`), and halfway through the
-collapse they're pushed through a noise field so they swirl instead of sliding
-in a straight line. It's 11k particles in **one draw call**. The same component
-plays backwards at the end to spell `200 OK`.
-
-### 4. The packet and the security scan (custom GLSL #2)
-
-`src/canvas/Packet.jsx`, `src/canvas/shaders/packet.frag`
-
-The packet sits at a fixed spot in front of the camera, but in world space, so
-it actually passes through the gates and leaves a trail (a ring buffer of its
-last 48 positions). In the gate section a uniform `uScan` sweeps a bright band
-from top to bottom, with "readout" stripes behind it, then the packet flashes
-when it's accepted.
-
-### 5. Gates that burn open (custom GLSL #3)
-
-`src/canvas/scenes/Gate.jsx`, `src/canvas/shaders/dissolve.frag`
-
-Each certification has a gate with a hatched membrane. When its scan finishes,
-`uDissolve` goes from 0 to 1. Simplex noise decides which pixels are discarded
-first, and a thin rim glows along the burning edge. The HTML cert list switches
-from "scanning…" to a stamped "verified" at the same scroll point (it reads
-`gateStage` from the store).
-
-### 6. Hand-drawn lines that "boil" (custom GLSL #4)
-
-`src/canvas/kit.js`
-
-In hand-drawn animation every frame is re-traced, so lines shimmer slightly. I
-patch three.js's line material with `onBeforeCompile` to add a tiny random
-offset per vertex that changes **8 times a second**, not every frame; the
-stepping is what makes it read as drawn. The offset is hashed from the vertex
-position, so two segments sharing a corner move together and never split. It's
-turned off for reduced motion.
-
-Plus a blueprint grid floor (`ground.frag`) that uses `fwidth()` so lines stay
-1px wide at any distance.
-
-### 7. The five project scenes
-
-`src/canvas/scenes/*.jsx`. Each is small and self-contained:
-
-| Project | Metaphor | Technique |
-|---|---|---|
-| CarePilot | hospitals as a graph, records hop between them | k-nearest-neighbour graph, `InstancedMesh` dots on arcs |
-| RentFlow | a building whose units change state | one instanced plane per unit, `setColorAt` |
-| Sensorium Nexus | devices streaming readings into live charts | line buffers shifted one sample at a time |
-| BazaarLens | stores race; the cheapest wins, not the fastest | per-race random durations and prices |
-| DYPIU PhD ERP | a student token stamped at each station | token moves along a curve driven by scroll |
-
-All the values in these are random or simulated. They illustrate the idea;
-they aren't data from the real systems.
-
-### 8. Performance
-
-- **Text before JavaScript.** A small Vite plugin in `vite.config.js` writes
-  the hero (built from `profile.js`) straight into `index.html`, so a slow phone
-  shows real text before any JS arrives. React replaces it with identical
-  markup, so nothing moves.
-- **The view is chosen before paint.** A few lines of inline script in
-  `index.html` decide simple vs 3D (`?simple`, no WebGL, reduced motion) and set
-  a class on `<html>`, so the layout never switches after it has been drawn.
-- **The 3D waits its turn.** The canvas is a `React.lazy` chunk that only
-  starts downloading after the page has loaded and the browser is idle. GSAP +
-  Lenis are a separate chunk too (`core/nav.js` loads them on demand), so the
-  simple view never downloads them unless you click a nav link.
-- **Each scene is its own chunk** (0.5 to 2 KB each). Only the active stop, one
-  behind and two ahead are mounted; the next ones are prefetched.
-- **No models, no textures.** Everything is built from code (lines, a few
-  instanced meshes), so there's nothing to download beyond JS and a few small
-  font files. Paper grain is an SVG filter in CSS.
-- **Shared materials.** Every line uses one of three materials, so the GPU
-  compiles a handful of shader programs, not hundreds.
-- **DPR capped** at 1.5 (1 on low-end), and drei's `PerformanceMonitor` drops
-  the resolution if fps falls and raises it again when it recovers.
-- **Device tiers** (`src/core/quality.js`): phones get a third of the
-  particles, no antialiasing and fewer animated objects. There's no
-  post-processing anywhere.
-
-Current production build: about 56 KB gzipped of JS for first paint, then
-about 49 KB (scroll) and 230 KB (3D) loaded after it.
-
-Lighthouse 12, measured here on a server **without a GPU** (WebGL runs on the
-CPU, which inflates "total blocking time" in the 3D view):
-
-| | Performance | Accessibility | Best practices | SEO | First paint (slow 4G phone) | Layout shift |
+| | Performance | Accessibility | Best practices | SEO | First paint | Layout shift |
 |---|---|---|---|---|---|---|
-| 3D view | 60 | 100 | 100 | 100 | 2.9 s | 0 |
-| Simple view | 88 | 100 | 100 | 100 | 3.0 s | 0.01 |
-
-The 60fps target still needs checking on a real laptop with a graphics card.
-
-### 9. Accessibility and the simple view
-
-- All content is real HTML: headings, lists, a table, a form. The canvas is
-  `aria-hidden`. The `<h1>` stays in the DOM after the particles take over
-  visually.
-- The first Tab stop is **"Skip the animation: simple view"**. Simple view
-  removes the canvas, smooth scroll and custom cursor, and shows the same
-  content as one readable page.
-- `prefers-reduced-motion` starts in the simple view (with a button to play the
-  3D anyway), and turns off line boil and animations.
-- The trace on the right edge is a list of buttons, so every stop can be
-  reached by keyboard. Panels become visible when anything inside them has
-  focus.
-
-### 10. The little things
-
-- **Terminal** (`~` or the button): `help`, `whoami`, `ls projects`,
-  `open <project>` (Tab completes), `certs`, `contact`, `resume`, `simple`,
-  `sound on|off`. Up/Down for history. It's a dialog with focus return and
-  `aria-live` output. `src/dom/Terminal.jsx`
-- **Magnetic links** (`src/dom/Magnetic.jsx`): `gsap.quickTo` leans the element
-  toward the cursor, capped at 8px.
-- **Cursor** (`src/dom/Cursor.jsx`): a red pen dot plus a pencil ring that
-  lags behind it. Only on mouse/trackpad.
-- **Sound** (`src/core/sound.js`): off by default and made with the Web Audio
-  API (oscillators, filtered noise, a slow LFO), so there's no audio file. The
-  filter opens a little at each stop, so the hum brightens as the request goes
-  deeper.
-- **Hand-drawn edges** (`src/styles/notebook.css`): page outlines, buttons and
-  the "fill" circles go through an SVG displacement filter. It's applied to a
-  separate border layer so the text inside stays sharp. Each page is tilted by
-  an angle derived from its page number, so it's the same on every visit.
+| Phone (slow 4G) | 99 | 100 | 100 | 100 | 1.6 s | 0.009 |
+| Desktop | 100 | 100 | 100 | 100 | 0.4 s | 0.016 |
 
 ---
 
-## File map
+## How it works (the interview version)
+
+### One data file, one derived catalogue
+- `src/content/profile.js` holds the facts. It's plain data, so Node can run it
+  too (the tests and the pre-render import it).
+- `src/content/catalog.js` turns those facts into **titles** (anything you can
+  open) and **rows**. It also holds `VIEWERS`: each viewer is just a row order.
+  A recruiter sees credentials first, an engineer sees projects first.
+  Everyone can reach everything.
+
+### Pre-rendered, then hydrated
+`npm run build` builds the app, then builds `src/entry-server.jsx` for Node,
+and `scripts/prerender.mjs` renders `<App/>` to HTML into `dist/index.html`. So:
+- the first response already contains every project, credential and job
+  (good for slow phones, search engines and link previews)
+- with JavaScript off, the whole catalogue is still readable
+- React then *hydrates* that HTML (`hydrateRoot` in `src/main.jsx`)
+
+For hydration to work, the first client render must match the server HTML
+exactly. That's why anything from the browser (storage, the URL hash) is read
+in a `useEffect` *after* the first render (see `App.jsx`).
+
+### No flash of the picker
+A 3-line inline script in `index.html` runs before paint: if this visitor
+already picked a viewer, or arrived on a shared `#title=` link, it adds
+`html.skip-gate`, and CSS hides the picker immediately. Once React is running
+it adds `.hydrated` and takes over.
+
+### State without a state library
+Five `useState`s in `App.jsx`: viewer, picker open, My list, recently opened,
+search query. The open title lives in the **URL hash** (`#title=id`,
+`src/lib/hash.js`), which gives shareable links and a working Back button for
+free. Storage goes through `src/lib/storage.js`, which never throws (private
+windows and blocked cookies make `localStorage` throw).
+
+### Posters without images
+`src/components/Art.jsx` draws every poster in SVG from the title's id: a
+pipeline of stamped approvals for the PhD ERP, a hospital network with one
+record's route for CarePilot, a lit-up building for RentFlow, sensor waves for
+Sensorium Nexus, racing price lanes for BazaarLens (the cheapest wins, not the
+fastest), and big result numbers for credentials. A seeded random generator
+keeps each poster identical on every visit and between server and client.
+No image downloads at all.
+
+### Accessible by construction
+- Cards are real `<button>`s and rows are `<ul>`s under headings.
+- Title pages and the trailer are dialogs: focus moves in, Tab stays inside,
+  Esc closes, focus returns to where you were. The page behind is `inert`.
+- Placeholders are visibly labelled "missing", never styled as content.
+- Colours are checked for 4.5:1 contrast; animations respect
+  `prefers-reduced-motion` (the trailer stops auto-advancing).
+
+### Performance
+- About 58 KB of gzipped JS in total. No 3D, no animation library.
+- The fonts the first screen needs are preloaded (the pre-render step adds
+  `<link rel="preload">`), so headlines don't reflow when fonts arrive.
+- Tailwind only ships the classes actually used (about 6 KB of gzipped CSS).
+
+---
+
+## Files
 
 ```
 src/
-  content/profile.js     every fact on the site (edit this one)
-  core/
-    route.js             the stops, the splines, the pacing
-    scroll.js            Lenis + ScrollTrigger → scroll.local
-    store.js             zustand store + the non-reactive scroll object
-    quality.js           device tier, DPR, reduced motion, WebGL check
-    ease.js              the house easing curve
-    sound.js             Web Audio ambient
-  canvas/
-    Experience.jsx       <Canvas>, lazy scenes, perf monitor, boil clock
-    CameraRig.jsx        camera on the spline + view offset
-    Packet.jsx           the request + its trail
-    ParticleText.jsx     text → particles → packet
-    Ground.jsx           grid floor
-    kit.js               palette, shared line materials, line boil, helpers
-    shaders/             GLSL (particles, packet, dissolve, ground, noise)
-    scenes/              one file per stop
-  dom/
-    sections/            the real HTML for each stop
-    Stop.jsx             tall sticky section vs simple section
-    Sheet.jsx            the taped notebook page
-    Terminal.jsx · TopBar.jsx · Trace.jsx · Cursor.jsx · Magnetic.jsx · SoundToggle.jsx · Txt.jsx
-  styles/
-    tokens.css           colours + fonts (change the look here)
-    base.css · sections.css · notebook.css
+  content/profile.js     every fact (the only file to edit for content)
+  content/catalog.js     titles, rows, viewers, search
+  lib/storage.js         localStorage that never throws
+  lib/hash.js            #title=id ⇄ open title
+  components/
+    Gate.jsx             "Who's here?"
+    NavBar.jsx           wordmark, sections, search ("/"), résumé, viewer
+    Billboard.jsx        hero + drifting poster wall
+    Row.jsx · TitleCard.jsx · Art.jsx
+    TitlePage.jsx        the title dialog (facts, episodes, more like this)
+    Trailer.jsx          the 7-shot trailer
+    Credits.jsx          contact + form + credits roll
+    Value.jsx            renders a fact or a "missing" tag
+  App.jsx · main.jsx · entry-server.jsx · index.css
+scripts/prerender.mjs    HTML pre-render + font preloads
+scripts/todo.mjs         lists missing facts
+tests/unit · tests/e2e · tests/load
+CLAUDE.md                the coding rules this repo follows
 ```
 
-## Stack
-
-Vite, React 18, three.js, @react-three/fiber, @react-three/drei, GSAP +
-ScrollTrigger, Lenis, zustand, vite-plugin-glsl. Fonts: Young Serif and
-Courier Prime (self-hosted via Fontsource).
+Stack: React 18, Vite 5, Tailwind CSS 3, Vitest, Playwright, axe-core,
+autocannon. Fonts: Big Shoulders Display and IBM Plex Sans/Mono, self-hosted.
