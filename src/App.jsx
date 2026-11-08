@@ -1,132 +1,142 @@
 /*
- * App — decides which version of the site you get, and lays out the page.
+ * App — the whole site is one page: billboard, rows, credits. Overlays on
+ * top of it: the "Who's here?" gate, a title page, the trailer.
  *
- *  - The content (all the <section>s) is the same in both modes.
- *  - "experience": tall sticky sections + the lazy-loaded 3D canvas behind.
- *  - "simple": normal-height sections, no canvas, no smooth scroll. Chosen
- *    automatically for ?simple, no WebGL, or prefers-reduced-motion (that
- *    choice is made by a tiny inline script in index.html, before paint).
+ * State, all local to this visitor:
+ *   viewer   who's watching (orders the rows)      → localStorage
+ *   saved    My List                               → localStorage
+ *   recent   titles opened, newest first           → localStorage
+ *   query    search box
+ *   open     the title in the URL hash (#title=id), so links are shareable
+ *
+ * The first render must match the pre-rendered HTML exactly, so anything
+ * read from the browser (storage, hash) is loaded in an effect afterwards.
  */
-import { Suspense, lazy, useEffect, useState } from 'react'
-import { profile } from './content/profile'
-import { useStore } from './core/store'
-import { quality } from './core/quality'
-import { loadScroll } from './core/nav'
-import { setSound } from './core/sound'
-import TopBar from './dom/TopBar'
-import Trace from './dom/Trace'
-import Terminal from './dom/Terminal'
-import Cursor from './dom/Cursor'
-import Hero from './dom/sections/Hero'
-import Certs from './dom/sections/Certs'
-import About from './dom/sections/About'
-import Project from './dom/sections/Project'
-import Skills from './dom/sections/Skills'
-import Contact from './dom/sections/Contact'
+import { useCallback, useEffect, useState } from 'react'
+import { ROWS, VIEWERS, DEFAULT_VIEWER, titleById, search } from './content/catalog'
+import { read, write } from './lib/storage'
+import { parseHash, setTitleHash, useTitleHash } from './lib/hash'
+import NavBar from './components/NavBar'
+import Billboard from './components/Billboard'
+import Row from './components/Row'
+import Gate from './components/Gate'
+import TitlePage from './components/TitlePage'
+import Trailer from './components/Trailer'
+import Credits from './components/Credits'
+import TitleCard from './components/TitleCard'
 
-const Experience = lazy(() => import('./canvas/Experience'))
-
-// GSAP + Lenis live in their own chunk (core/scroll.js); this holds it once loaded.
-let scrollMod = null
-
-/*
- * Wait until the page has painted and the browser is idle before starting the
- * 3D download. The text is readable first; the world fades in after.
- */
-function useAfterFirstPaint(enabled) {
-  const [ok, setOk] = useState(false)
-  useEffect(() => {
-    if (!enabled) return
-    const idle = window.requestIdleCallback || ((f) => setTimeout(f, 200))
-    const start = () => idle(() => setOk(true), { timeout: 1500 })
-    if (document.readyState === 'complete') start()
-    else window.addEventListener('load', start, { once: true })
-    return () => window.removeEventListener('load', start)
-  }, [enabled])
-  return ok
-}
-
+const MAX_RECENT = 8
 
 export default function App() {
-  const mode = useStore((s) => s.mode)
-  const ready = useStore((s) => s.canvasReady)
-  const setMode = useStore((s) => s.setMode)
-  const simple = mode === 'simple'
-  const show3d = useAfterFirstPaint(!simple) && !simple
+  const [ready, setReady] = useState(false) // true once browser state is loaded
+  const [viewer, setViewer] = useState(null)
+  // Open in the pre-rendered HTML; CSS hides it before paint for returning visitors.
+  const [gate, setGate] = useState(true)
+  const [saved, setSaved] = useState([])
+  const [recent, setRecent] = useState([])
+  const [query, setQuery] = useState('')
+  const [trailer, setTrailer] = useState(false)
+  const openId = useTitleHash()
+  const open = openId ? titleById[openId] : null
 
-  // (Re)build scroll handling whenever the layout changes between modes.
   useEffect(() => {
-    window.scrollTo(0, 0)
-    document.documentElement.classList.toggle('is-simple', simple)
-    if (simple) {
-      scrollMod?.destroyScroll()
-      useStore.getState().setCanvasReady(false)
-      if (useStore.getState().sound) {
-        setSound(false)
-        useStore.getState().setSound(false)
-      }
-      return
-    }
-    let alive = true
-    loadScroll().then((m) => {
-      scrollMod = m
-      if (alive) m.initScroll({ smooth: !quality.reducedMotion })
+    const v = read('viewer', null)
+    setViewer(VIEWERS[v] ? v : null)
+    // Someone who followed a shared link (#title=...) goes straight to it.
+    setGate(!VIEWERS[v] && !parseHash(window.location.hash))
+    document.documentElement.classList.add('hydrated')
+    setSaved(read('saved', []).filter((id) => titleById[id]))
+    setRecent(read('recent', []).filter((id) => titleById[id]))
+    setReady(true)
+  }, [])
+
+  // Remember what this visitor opened (for "Continue watching").
+  useEffect(() => {
+    if (!open) return
+    setRecent((r) => {
+      const next = [open.id, ...r.filter((x) => x !== open.id)].slice(0, MAX_RECENT)
+      write('recent', next)
+      return next
     })
-    return () => {
-      alive = false
-      scrollMod?.destroyScroll()
-    }
-  }, [simple])
+  }, [open])
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('canvas-ready', ready && !simple)
-  }, [ready, simple])
+  const pickViewer = (v) => {
+    setViewer(v)
+    write('viewer', v)
+    setGate(false)
+    window.scrollTo(0, 0)
+    // The button just clicked disappears with the gate; drop focus so the
+    // next Tab starts from there (the gate is first in the DOM).
+    document.activeElement?.blur()
+  }
+
+  const toggleSave = (id) =>
+    setSaved((s) => {
+      const next = s.includes(id) ? s.filter((x) => x !== id) : [id, ...s]
+      write('saved', next)
+      return next
+    })
+
+  const openTitle = useCallback((id) => setTitleHash(id), [])
+  const closeTitle = useCallback(() => setTitleHash(null), [])
+  const closeTrailer = useCallback(() => setTrailer(false), [])
+  const toContact = useCallback(() => {
+    setTrailer(false)
+    document.getElementById('credits')?.scrollIntoView()
+  }, [])
+
+  const rows = VIEWERS[viewer ?? DEFAULT_VIEWER].rows
+  const results = query.trim() ? search(query) : null
+  const overlay = (ready && gate) || open || trailer
+  const list = (ids) => ids.map((id) => titleById[id]).filter(Boolean)
 
   return (
     <>
-      {/* First thing a keyboard user reaches. */}
-      <button type="button" className="skip" onClick={() => setMode(simple ? 'experience' : 'simple')}>
-        {simple ? 'Play the 3D version' : 'Skip the animation: simple view'}
-      </button>
-      <TopBar />
-      {show3d && (
-        <Suspense fallback={null}>
-          <Experience />
-        </Suspense>
-      )}
-      {!simple && <Trace />}
-      {!simple && <Cursor />}
-      <div className="grain" aria-hidden="true" />
-      {/* Filters used by CSS for hand-drawn edges (see notebook.css). */}
-      <svg className="sr-only" aria-hidden="true" focusable="false">
-        <filter id="rough">
-          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" />
-          <feDisplacementMap in="SourceGraphic" scale="3.2" />
-        </filter>
-        <filter id="rough-strong">
-          <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="9" />
-          <feDisplacementMap in="SourceGraphic" scale="5" />
-        </filter>
-      </svg>
+      {/* Gate first in the DOM: after it closes, the next Tab lands on the skip link. */}
+      <Gate open={gate} onPick={pickViewer} />
 
-      <main id="main">
-        {simple && quality.reducedMotion && (
-          <p className="notice">
-            Your system asks for reduced motion, so you're seeing the simple view.{' '}
-            <button type="button" onClick={() => setMode('experience')}>Play the 3D version anyway</button>
-          </p>
-        )}
-        <Hero />
-        <Certs />
-        <About />
-        {simple && <h2 className="simple-h">Work</h2>}
-        {profile.projects.map((p, i) => (
-          <Project key={p.slug} p={p} no={i} />
-        ))}
-        <Skills />
-        <Contact />
-      </main>
-      <Terminal />
+      <a href="#rows" className="fixed left-3 top-3 z-[60] -translate-y-24 rounded-sm bg-marigold px-3 py-2 font-semibold text-night focus:translate-y-0">
+        Skip to the catalogue
+      </a>
+
+      <div inert={overlay ? '' : undefined} aria-hidden={overlay ? true : undefined}>
+        <NavBar query={query} onQuery={setQuery} viewer={viewer} onSwitchViewer={() => setGate(true)} />
+
+        <main>
+          {!results && <Billboard onPlay={() => setTrailer(true)} onInfo={() => openTitle('about')} />}
+
+          <div id="rows" className={`relative z-10 space-y-8 sm:space-y-12 ${results ? 'pt-24' : '-mt-10 sm:-mt-16'}`}>
+            {results ? (
+              <section aria-labelledby="results" className="px-4 sm:px-10">
+                <h2 id="results" className="font-display text-3xl font-bold uppercase tracking-wide text-cream">
+                  {results.length ? `Results for “${query.trim()}”` : `Nothing matches “${query.trim()}”`}
+                </h2>
+                {!results.length && <p className="mt-2 text-dust">Try “aws”, “iot”, “healthcare” or “intern”.</p>}
+                <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {results.map((t) => (
+                    <li key={t.id}>
+                      <TitleCard title={t} onOpen={openTitle} saved={saved.includes(t.id)} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : (
+              <>
+                {ready && <Row id="mylist" name="My list" note="saved in your browser only" titles={list(saved)} onOpen={openTitle} savedIds={saved} />}
+                {ready && <Row id="recent" name="Continue watching" titles={list(recent)} onOpen={openTitle} savedIds={saved} />}
+                {rows.map((key) => (
+                  <Row key={key} id={key} name={ROWS[key].name} titles={list(ROWS[key].ids)} onOpen={openTitle} savedIds={saved} />
+                ))}
+              </>
+            )}
+          </div>
+        </main>
+
+        <Credits />
+      </div>
+
+      {open && <TitlePage key={open.id} title={open} onClose={closeTitle} onOpen={openTitle} saved={saved.includes(open.id)} onToggleSave={toggleSave} />}
+      {trailer && <Trailer onClose={closeTrailer} onContact={toContact} />}
     </>
   )
 }

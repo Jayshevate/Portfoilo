@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { background: theme('colors.night'); color: theme('colors.cream'); scroll-behavior: smooth; scroll-padding-top: 5rem; }
+  body { @apply font-sans antialiased; -webkit-tap-highlight-color: transparent; }
+  ::selection { background: theme('colors.marigold'); color: theme('colors.night'); }
+  :focus-visible { outline: 2px solid theme('colors.marigold'); outline-offset: 2px; }
+}
+
+/* Returning visitors and shared links: an inline script in index.html adds
+   .skip-gate before paint, so the "Who's here?" screen never flashes up.
+   Once React is running (.hydrated) it decides on its own. */
+html.skip-gate:not(.hydrated) [data-gate] { display: none; }
+
+/* Trailer progress bar (used from an inline style, so it lives here rather
+   than in tailwind.config.js, which only emits keyframes for used classes). */
+@keyframes shot-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
