@@ -27,6 +27,7 @@ export default {
       keyframes: {
         drift: { from: { transform: 'translate3d(0,0,0)' }, to: { transform: 'translate3d(-50%,0,0)' } },
         rise: { from: { opacity: '0', transform: 'translateY(12px)' }, to: { opacity: '1', transform: 'none' } },
+        zoom: { from: { transform: 'scale(1.05)' }, to: { transform: 'scale(1.25)' } },
       },
       animation: {
         drift: 'drift 90s linear infinite',

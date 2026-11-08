@@ -7,7 +7,7 @@
 import { useRef } from 'react'
 import TitleCard from './TitleCard'
 
-export default function Row({ id, name, titles, onOpen, savedIds = [], note }) {
+export default function Row({ id, name, titles, onOpen, savedIds = [], note, numbered = false }) {
   const track = useRef(null)
   const page = (dir) => track.current?.scrollBy({ left: dir * track.current.clientWidth * 0.9, behavior: 'smooth' })
 
@@ -25,9 +25,17 @@ export default function Row({ id, name, titles, onOpen, savedIds = [], note }) {
         ref={track}
         className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto scroll-smooth px-4 sm:scroll-px-10 pb-4 pt-2 [scrollbar-width:none] sm:px-10 [&::-webkit-scrollbar]:hidden"
       >
-        {titles.map((t) => (
-          <li key={t.id} className="w-[72vw] shrink-0 snap-start sm:w-[42vw] md:w-[30vw] lg:w-[22vw] xl:w-[19vw]">
-            <TitleCard title={t} onOpen={onOpen} saved={savedIds.includes(t.id)} />
+        {titles.map((t, i) => (
+          <li key={t.id} className={`flex shrink-0 snap-start items-end ${numbered ? 'w-[86vw] sm:w-[52vw] md:w-[38vw] lg:w-[28vw] xl:w-[24vw]' : 'w-[72vw] sm:w-[42vw] md:w-[30vw] lg:w-[22vw] xl:w-[19vw]'}`}>
+            {numbered && (
+              // Outlined numerals, just a running order, not a ranking.
+              <span aria-hidden="true" className="-mr-3 select-none font-display text-[7rem] font-black leading-[0.75] text-transparent [-webkit-text-stroke:2px_#f2a23a] sm:text-[9rem]">
+                {i + 1}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <TitleCard title={t} onOpen={onOpen} saved={savedIds.includes(t.id)} />
+            </div>
           </li>
         ))}
       </ul>

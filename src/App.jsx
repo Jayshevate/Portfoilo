@@ -105,7 +105,7 @@ export default function App() {
         <main>
           {!results && <Billboard onPlay={() => setTrailer(true)} onInfo={() => openTitle('about')} />}
 
-          <div id="rows" className={`relative z-10 space-y-8 sm:space-y-12 ${results ? 'pt-24' : '-mt-10 sm:-mt-16'}`}>
+          <div id="rows" className={`relative z-10 space-y-8 sm:space-y-12 ${results ? 'pt-24' : 'pt-10'}`}>
             {results ? (
               <section aria-labelledby="results" className="px-4 sm:px-10">
                 <h2 id="results" className="font-display text-3xl font-bold uppercase tracking-wide text-cream">
@@ -125,7 +125,7 @@ export default function App() {
                 {ready && <Row id="mylist" name="My list" note="saved in your browser only" titles={list(saved)} onOpen={openTitle} savedIds={saved} />}
                 {ready && <Row id="recent" name="Continue watching" titles={list(recent)} onOpen={openTitle} savedIds={saved} />}
                 {rows.map((key) => (
-                  <Row key={key} id={key} name={ROWS[key].name} titles={list(ROWS[key].ids)} onOpen={openTitle} savedIds={saved} />
+                  <Row key={key} id={key} name={ROWS[key].name} numbered={key === 'projects'} note={key === 'projects' ? 'now showing' : undefined} titles={list(ROWS[key].ids)} onOpen={openTitle} savedIds={saved} />
                 ))}
               </>
             )}

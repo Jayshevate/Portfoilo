@@ -4,8 +4,14 @@ My portfolio, built as a streaming catalogue. You pick who's watching
 (recruiter, engineer, just looking), get a billboard with the essentials,
 then rows of "titles": projects, credentials, experience and the stack.
 Every title opens into its own page with "episodes" (problem → architecture
-→ stack → my part). The trailer is a 25-second cut of the facts. The end
+→ stack → my part). The trailer is a 20-second cut of the facts. The end
 credits are the contact page.
+
+It's meant to feel alive. The name slams in letter by letter, a marigold
+ticker runs the real highlights, and every poster moves: CarePilot's record
+route flows, RentFlow's windows flicker, Sensorium's waves scroll, BazaarLens's
+boxes race, and the PhD ERP's student token hops. Projects get big "now
+showing" numerals. All of it switches off under `prefers-reduced-motion`.
 
 The idea: recruiters already know how to use a streaming app. They find what
 they need in seconds, and the site is still memorable.
@@ -66,7 +72,7 @@ If Playwright can't find a browser on your machine:
   on `undefined`, `NaN`, `[object Object]` or `null` anywhere in the text.
 - `storage.test.js`: the site still works when the browser blocks storage.
 
-**Browser tests** (`tests/e2e/run.mjs`, 15 scenarios, real Chromium)
+**Browser tests** (`tests/e2e/run.mjs`, 16 scenarios, real Chromium)
 
 - the viewer picker sets the order of the rows and is remembered
 - all 17 titles open, show no rendering garbage, close with Esc, and return
@@ -79,6 +85,7 @@ If Playwright can't find a browser on your machine:
 - **axe-core WCAG 2.1 AA scan** of the picker, home, a title page and the
   trailer: zero violations
 - phone viewport: no sideways scrolling
+- reduced motion: zero running animations, and the trailer doesn't auto-advance
 - blocked storage, and **JavaScript turned off** (all content still readable)
 - **25 visitors at once**, in parallel browser contexts: each gets the right
   rows and their own My list, with no errors
@@ -98,8 +105,8 @@ outside call is the contact form, and each submission is independent.
 
 | | Performance | Accessibility | Best practices | SEO | First paint | Layout shift |
 |---|---|---|---|---|---|---|
-| Phone (slow 4G) | 99 | 100 | 100 | 100 | 1.6 s | 0.009 |
-| Desktop | 100 | 100 | 100 | 100 | 0.4 s | 0.016 |
+| Phone (slow 4G) | 99 | 100 | 100 | 100 | 1.6 s | 0.005 |
+| Desktop | 100 | 100 | 100 | 100 | 0.4 s | 0.001 |
 
 ---
 
@@ -177,7 +184,7 @@ src/
     Billboard.jsx        hero + drifting poster wall
     Row.jsx · TitleCard.jsx · Art.jsx
     TitlePage.jsx        the title dialog (facts, episodes, more like this)
-    Trailer.jsx          the 7-shot trailer
+    Trailer.jsx          the 7-shot trailer (2.8 s a shot)
     Credits.jsx          contact + form + credits roll
     Value.jsx            renders a fact or a "missing" tag
   App.jsx · main.jsx · entry-server.jsx · index.css

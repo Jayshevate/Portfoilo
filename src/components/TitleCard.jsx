@@ -11,7 +11,7 @@ export default function TitleCard({ title, onOpen, saved }) {
     <button
       type="button"
       onClick={() => onOpen(title.id)}
-      className="group relative block w-full overflow-hidden rounded-md bg-soot text-left outline-none ring-marigold transition duration-300 focus-visible:ring-2 motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.03]"
+      className="group relative block w-full overflow-hidden rounded-md bg-soot text-left outline-none ring-marigold transition duration-300 focus-visible:ring-2 hover:shadow-[0_0_0_2px_#f2a23a,0_18px_40px_-12px_rgba(242,162,58,.45)] motion-safe:hover:-translate-y-2 motion-safe:hover:scale-[1.06]"
       data-title={title.id}
     >
       <Art title={title} className="block aspect-video w-full" />

@@ -242,6 +242,18 @@ const tests = {
     await ctx.close()
   },
 
+  async 'reduced motion: nothing animates, trailer waits for you'(b) {
+    const { ctx, page } = await visitor(b, { reducedMotion: 'reduce' })
+    await page.goto(BASE)
+    await page.getByRole('button', { name: /Recruiter/ }).click()
+    const running = await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length)
+    assert(running === 0, `${running} animations still running`)
+    await page.getByRole('button', { name: /Play trailer/ }).click()
+    await page.waitForTimeout(3500)
+    assert(await page.getByText('1 / 7').isVisible(), 'trailer auto-advanced under reduced motion')
+    await ctx.close()
+  },
+
   async 'still works when the browser blocks storage'(b) {
     const { ctx, page } = await visitor(b)
     await ctx.addInitScript(() => {

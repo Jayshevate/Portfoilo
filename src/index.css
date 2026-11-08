@@ -14,10 +14,34 @@
    Once React is running (.hydrated) it decides on its own. */
 html.skip-gate:not(.hydrated) [data-gate] { display: none; }
 
+/* ---------- living posters (all off with reduced motion, see below) ---------- */
+.art-flow { animation: art-flow 1.1s linear infinite; }
+.art-wave { animation: art-wave 4s linear infinite; }
+.art-flicker { animation: art-flicker 4.5s steps(1) infinite; }
+.art-race { animation: art-race 2.2s cubic-bezier(.2,.8,.2,1) infinite; }
+.art-hop { animation: art-hop 1.4s cubic-bezier(.3,1.6,.5,1) infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes art-flow { to { stroke-dashoffset: -18; } }
+@keyframes art-wave { to { transform: translateX(-36px); } }
+@keyframes art-flicker { 0%, 100% { opacity: 1; } 47% { opacity: .25; } 53% { opacity: 1; } 71% { opacity: .5; } }
+@keyframes art-race { 0% { transform: translateX(-220px); } 60%, 100% { transform: none; } }
+@keyframes art-hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+/* Name slams in letter by letter, then the marigold rule sweeps under it. */
+.slam { display: inline-block; animation: slam .55s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes slam { from { opacity: 0; transform: translateY(.45em) scale(1.25) skewX(-8deg); } }
+.sweep { transform-origin: left; animation: sweep .9s cubic-bezier(.16,1,.3,1) .7s both; }
+@keyframes sweep { from { transform: scaleX(0); } }
+
+/* Highlights ticker. Two copies of the content, so the loop has no seam. */
+.ticker { animation: ticker 28s linear infinite; }
+.ticker:hover { animation-play-state: paused; }
+@keyframes ticker { to { transform: translateX(-50%); } }
+
 /* Trailer progress bar (used from an inline style, so it lives here rather
    than in tailwind.config.js, which only emits keyframes for used classes). */
 @keyframes shot-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .art-flow, .art-wave, .art-flicker, .art-race, .art-hop, .slam, .sweep, .ticker { animation: none !important; }
 }

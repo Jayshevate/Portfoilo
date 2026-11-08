@@ -30,14 +30,14 @@ export default function Gate({ open, onPick }) {
       </p>
 
       <ul className="mt-10 grid grid-cols-3 gap-4 sm:gap-8">
-        {Object.entries(VIEWERS).map(([key, v]) => (
-          <li key={key}>
+        {Object.entries(VIEWERS).map(([key, v], i) => (
+          <li key={key} className="motion-safe:animate-rise" style={{ animationDelay: `${120 + i * 110}ms` }}>
             <button
               type="button"
               onClick={() => onPick(key)}
               className="group flex w-24 flex-col items-center text-center outline-none sm:w-36"
             >
-              <span className="grid aspect-square w-full place-items-center rounded-md bg-soot ring-1 ring-line transition group-hover:ring-2 group-hover:ring-marigold group-focus-visible:ring-2 group-focus-visible:ring-marigold">
+              <span className="grid aspect-square w-full place-items-center rounded-md bg-soot ring-1 ring-line transition group-hover:ring-2 group-hover:ring-marigold group-hover:shadow-[0_0_40px_-6px_rgba(242,162,58,.6)] group-focus-visible:ring-2 group-focus-visible:ring-marigold motion-safe:group-hover:-translate-y-1.5 motion-safe:group-hover:scale-105">
                 <svg viewBox="0 0 64 64" className="w-1/2 fill-none stroke-marigold" aria-hidden="true">
                   {FACE[key]}
                 </svg>

@@ -34,7 +34,7 @@ function Pipeline() {
           {i < 3 && <path d={`M${x - 4} 72 l3 3 l6 -7`} stroke={C.gold} strokeWidth="2" fill="none" />}
         </g>
       ))}
-      <rect x={xs[3] - 6} y="40" width="12" height="12" fill={C.gold} />
+      <rect x={xs[3] - 6} y="40" width="12" height="12" fill={C.gold} className="art-hop" />
     </g>
   )
 }
@@ -57,7 +57,7 @@ function Graph({ r }) {
       {edges.map(([a, b], k) => (
         <line key={k} x1={nodes[a][0]} y1={nodes[a][1]} x2={nodes[b][0]} y2={nodes[b][1]} stroke={C.line} strokeWidth="1.5" />
       ))}
-      <polyline points={route.map((i) => nodes[i].join(',')).join(' ')} fill="none" stroke={C.gold} strokeWidth="2" strokeDasharray="5 4" />
+      <polyline points={route.map((i) => nodes[i].join(',')).join(' ')} fill="none" stroke={C.gold} strokeWidth="2" strokeDasharray="5 4" className="art-flow" />
       {nodes.map(([x, y], i) => (
         <g key={i}>
           <circle cx={x} cy={y} r={route.includes(i) ? 6 : 4} fill={route.includes(i) ? C.gold : C.ash} stroke={C.dust} strokeWidth="1.2" />
@@ -73,7 +73,20 @@ function Building({ r }) {
   for (let f = 0; f < 5; f++)
     for (let c = 0; c < 4; c++) {
       const v = r()
-      cells.push(<rect key={`${f}-${c}`} x={108 + c * 27} y={34 + f * 25} width="19" height="16" fill={v > 0.82 ? C.gold : v > 0.55 ? C.dust : C.ash} opacity={v > 0.55 ? 0.9 : 1} />)
+      const lit = v > 0.82
+      cells.push(
+        <rect
+          key={`${f}-${c}`}
+          x={108 + c * 27}
+          y={34 + f * 25}
+          width="19"
+          height="16"
+          fill={lit ? C.gold : v > 0.55 ? C.dust : C.ash}
+          opacity={v > 0.55 ? 0.9 : 1}
+          className={lit || v < 0.12 ? 'art-flicker' : undefined}
+          style={{ animationDelay: `${(v * 4).toFixed(2)}s` }}
+        />,
+      )
     }
   return (
     <g>
@@ -95,7 +108,9 @@ function Waves({ r }) {
       const x = 16 + i * 4.5
       return `${x.toFixed(1)},${(y0 + Math.sin(x * f + ph) * 9 + Math.sin(x * f * 3.1) * 3).toFixed(1)}`
     })
-    return <polyline key={k} points={pts.join(' ')} fill="none" stroke={k === 1 ? C.gold : C.dust} strokeWidth={k === 1 ? 2 : 1.4} />
+    return (
+      <polyline key={k} points={pts.join(' ')} fill="none" stroke={k === 1 ? C.gold : C.dust} strokeWidth={k === 1 ? 2 : 1.4} className="art-wave" style={{ animationDuration: `${3 + k}s` }} />
+    )
   })
   return <g>{lines}</g>
 }
@@ -113,7 +128,7 @@ function Lanes({ r }) {
         return (
           <g key={i}>
             <line x1="24" y1={y} x2="296" y2={y} stroke={C.line} strokeWidth="1.5" />
-            <rect x={x - 9} y={y - 9} width="18" height="18" fill={win ? C.gold : C.ash} stroke={win ? C.gold : C.dust} strokeWidth="1.4" />
+            <rect x={x - 9} y={y - 9} width="18" height="18" fill={win ? C.gold : C.ash} stroke={win ? C.gold : C.dust} strokeWidth="1.4" className="art-race" style={{ animationDuration: `${(1.6 + (1 - run.reach) * 2.4).toFixed(2)}s` }} />
             <rect x={x + 14} y={y - 4} width={run.price} height="8" fill={win ? C.gold : C.line} />
           </g>
         )

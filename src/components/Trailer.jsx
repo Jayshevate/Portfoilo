@@ -1,5 +1,5 @@
 /*
- * The trailer: seven title cards, about 3.5 seconds each, built only from
+ * The trailer: seven title cards, about 2.8 seconds each, built only from
  * facts in profile.js. Space pauses, ←/→ step, Esc closes. With reduced
  * motion it doesn't auto-advance; you step through it yourself.
  */
@@ -8,7 +8,7 @@ import { profile } from '../content/profile'
 import { titleById } from '../content/catalog'
 import Art from './Art'
 
-const SHOT_MS = 3500
+const SHOT_MS = 2800
 
 function useShots() {
   return useMemo(() => {
@@ -60,7 +60,7 @@ export default function Trailer({ onClose, onContact }) {
   return (
     <div ref={box} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Trailer" className="fixed inset-0 z-50 overflow-hidden bg-night outline-none">
       <div key={i} aria-hidden="true" className="absolute inset-0 opacity-50 motion-safe:animate-[rise_1.2s_ease-out_both]">
-        <Art title={titleById[shot.art]} className="h-full w-full scale-110 motion-safe:transition-transform motion-safe:duration-[3500ms] motion-safe:ease-linear" />
+        <Art title={titleById[shot.art]} className="h-full w-full motion-safe:animate-[zoom_2.8s_linear_both]" />
         <div className="absolute inset-0 bg-gradient-to-t from-night via-night/60 to-night/30" />
       </div>
 
