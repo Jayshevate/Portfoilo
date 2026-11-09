@@ -9,7 +9,7 @@ describe('catalog', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  it('every viewer orders the same four rows, each row is non-empty', () => {
+  it('every viewer orders the same rows, each row is non-empty', () => {
     for (const v of Object.values(VIEWERS)) expect([...v.rows].sort()).toEqual(Object.keys(ROWS).sort())
     for (const r of Object.values(ROWS)) {
       expect(r.ids.length).toBeGreaterThan(0)
