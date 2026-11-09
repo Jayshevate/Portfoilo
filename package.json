@@ -11,7 +11,8 @@
     "test:e2e": "node tests/e2e/run.mjs",
     "test:load": "node tests/load/run.mjs",
     "check": "npm run test && npm run build && npm run test:e2e && npm run test:load",
-    "todo": "node scripts/todo.mjs"
+    "todo": "node scripts/todo.mjs",
+    "link": "node scripts/link.mjs"
   },
   "dependencies": {
     "@fontsource/big-shoulders-display": "^5.1.0",

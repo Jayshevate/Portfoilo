@@ -13,7 +13,7 @@
     <script>
       // Before paint: no "Who's here?" screen for returning visitors or shared links.
       try {
-        if (/[#&]title=/.test(location.hash) || localStorage.getItem('jcs:viewer')) document.documentElement.classList.add('skip-gate')
+        if (/[#&]title=/.test(location.hash) || /[?&]for=/.test(location.search) || localStorage.getItem('jcs:viewer')) document.documentElement.classList.add('skip-gate')
       } catch (e) {}
     </script>
     <!-- Without JavaScript the picker can't work, so skip it and show the catalogue. -->

@@ -16,6 +16,27 @@ showing" numerals. All of it switches off under `prefers-reduced-motion`.
 The idea: recruiters already know how to use a streaming app. They find what
 they need in seconds, and the site is still memorable.
 
+**Tailored links: one per application.** Send a company its own link:
+
+```bash
+SITE_URL=https://your-site.example npm run link -- "Infosys" cloud
+# → https://your-site.example/?for=Infosys&role=cloud
+```
+
+That visitor skips the picker and sees "Prepared for Infosys · cloud role" on
+the billboard. The brief opens with Cloud, highlighted as "the role you're
+hiring for", and the browser tab title includes the company name. Roles:
+`cloud`, `backend`, `security`, `devops`. Values are shown as plain text,
+stripped of markup and capped at 40 characters (there's a test that tries to
+inject HTML).
+
+**Extras → Making of this site.** The portfolio as its own case study (the
+problem, the architecture, the stack, the quality bar) with a link to this
+public repo. It's proof of engineering a recruiter can check.
+
+**Local time in Pune.** The brief and the credits show my current time
+(IST, UTC+5:30) for recruiters in other time zones.
+
 **For recruiters: the 60-second brief.** Right under the billboard (for
 recruiters; after the rows for everyone else):
 - **Why me for…** each target role, with only the facts that back it. A role
@@ -71,7 +92,7 @@ npm run test:load  # 200 parallel connections against the build
 If Playwright can't find a browser on your machine:
 `npx playwright install chromium`.
 
-**Unit tests** (`tests/unit/`, 22 tests)
+**Unit tests** (`tests/unit/`, 25 tests)
 
 - `facts.test.js`: every score, date, title and employer must match the
   resume exactly. If someone edits a number by mistake, this fails.
@@ -80,15 +101,19 @@ If Playwright can't find a browser on your machine:
 - `render.test.jsx`: renders the whole page the way the build does and fails
   on `undefined`, `NaN`, `[object Object]` or `null` anywhere in the text.
 - `storage.test.js`: the site still works when the browser blocks storage.
+- `tailor.test.js`: tailored-link parsing, unknown roles ignored, markup
+  stripped, length capped.
 - `brief.test.js`: every "why me" proof is built from text already in
   `profile.js`, and the ATS summary has no placeholders or garbage.
 
-**Browser tests** (`tests/e2e/run.mjs`, 17 scenarios, real Chromium)
+**Browser tests** (`tests/e2e/run.mjs`, 18 scenarios, real Chromium)
 
 - the recruiter brief comes first, and "Copy summary" puts a clean profile on
   the clipboard
 - the viewer picker sets the order of the rows and is remembered
-- all 17 titles open, show no rendering garbage, close with Esc, and return
+- a tailored link greets the company, leads with its role and skips the
+  picker, and an HTML/script injection attempt in `?for=` renders as text
+- all 18 titles open, show no rendering garbage, close with Esc, and return
   keyboard focus to the card
 - shared links (`#title=carepilot`) open straight to the title (no picker),
   Back closes it, and unknown ids are ignored
@@ -119,7 +144,7 @@ outside call is the contact form, and each submission is independent.
 
 | | Performance | Accessibility | Best practices | SEO | First paint | Layout shift |
 |---|---|---|---|---|---|---|
-| Phone (slow 4G) | 99 | 100 | 100 | 100 | 1.6 s | 0.005 |
+| Phone (slow 4G) | 98 | 100 | 100 | 100 | 1.8 s | 0.005 |
 | Desktop | 100 | 100 | 100 | 100 | 0.4 s | 0.001 |
 
 ---
@@ -191,6 +216,8 @@ src/
   content/profile.js     every fact (the only file to edit for content)
   content/catalog.js     titles, rows, viewers, search
   content/brief.js       role fit + ATS summary (facts mapped, never added)
+  content/making-of.js   the "Making of this site" extra
+  lib/tailor.js          ?for=Company&role=… tailored links
   lib/storage.js         localStorage that never throws
   lib/hash.js            #title=id ⇄ open title
   components/
@@ -198,6 +225,7 @@ src/
     NavBar.jsx           wordmark, sections, search ("/"), résumé, viewer
     Billboard.jsx        hero + drifting poster wall + highlights ticker
     Brief.jsx            the recruiter's 60-second brief
+    PuneClock.jsx        my local time (IST)
     Row.jsx · TitleCard.jsx · Art.jsx
     TitlePage.jsx        the title dialog (facts, episodes, more like this)
     Trailer.jsx          the 7-shot trailer (2.8 s a shot)
@@ -206,6 +234,7 @@ src/
   App.jsx · main.jsx · entry-server.jsx · index.css
 scripts/prerender.mjs    HTML pre-render + font preloads
 scripts/todo.mjs         lists missing facts
+scripts/link.mjs         prints a tailored link for one application
 tests/unit · tests/e2e · tests/load
 CLAUDE.md                the coding rules this repo follows
 ```

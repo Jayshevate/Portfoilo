@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ROWS, VIEWERS, DEFAULT_VIEWER, titleById, search } from './content/catalog'
 import { read, write } from './lib/storage'
 import { parseHash, setTitleHash, useTitleHash } from './lib/hash'
+import { useTailor } from './lib/tailor'
 import NavBar from './components/NavBar'
 import Billboard from './components/Billboard'
 import Row from './components/Row'
@@ -37,6 +38,7 @@ export default function App() {
   const [recent, setRecent] = useState([])
   const [query, setQuery] = useState('')
   const [trailer, setTrailer] = useState(false)
+  const tailor = useTailor() // ?for=Company&role=cloud
   const openId = useTitleHash()
   const open = openId ? titleById[openId] : null
 
@@ -44,12 +46,19 @@ export default function App() {
     const v = read('viewer', null)
     setViewer(VIEWERS[v] ? v : null)
     // Someone who followed a shared link (#title=...) goes straight to it.
-    setGate(!VIEWERS[v] && !parseHash(window.location.hash))
+    // Shared links (#title=...) and tailored links (?for=...) skip the picker.
+    const direct = parseHash(window.location.hash) || new URLSearchParams(window.location.search).has('for')
+    setGate(!VIEWERS[v] && !direct)
     document.documentElement.classList.add('hydrated')
     setSaved(read('saved', []).filter((id) => titleById[id]))
     setRecent(read('recent', []).filter((id) => titleById[id]))
     setReady(true)
   }, [])
+
+  // A tailored link says who it's for in the tab title too.
+  useEffect(() => {
+    if (tailor?.company) document.title = `Jaykumar Shevate for ${tailor.company}`
+  }, [tailor])
 
   // Remember what this visitor opened (for "Continue watching").
   useEffect(() => {
@@ -104,7 +113,7 @@ export default function App() {
         <NavBar query={query} onQuery={setQuery} viewer={viewer} onSwitchViewer={() => setGate(true)} />
 
         <main>
-          {!results && <Billboard onPlay={() => setTrailer(true)} onInfo={() => openTitle('about')} />}
+          {!results && <Billboard tailor={tailor} onPlay={() => setTrailer(true)} onInfo={() => openTitle('about')} />}
 
           <div id="rows" className={`relative z-10 space-y-8 sm:space-y-12 ${results ? 'pt-24' : 'pt-10'}`}>
             {results ? (
@@ -126,11 +135,11 @@ export default function App() {
                 {ready && <Row id="mylist" name="My list" note="saved in your browser only" titles={list(saved)} onOpen={openTitle} savedIds={saved} />}
                 {ready && <Row id="recent" name="Continue watching" titles={list(recent)} onOpen={openTitle} savedIds={saved} />}
                 {/* Recruiters get the brief first; everyone else after the rows they came for. */}
-                {viewer !== 'engineer' && viewer !== 'curious' && <Brief />}
+                {viewer !== 'engineer' && viewer !== 'curious' && <Brief tailor={tailor} />}
                 {rows.map((key) => (
                   <Row key={key} id={key} name={ROWS[key].name} numbered={key === 'projects'} note={key === 'projects' ? 'now showing' : undefined} titles={list(ROWS[key].ids)} onOpen={openTitle} savedIds={saved} />
                 ))}
-                {(viewer === 'engineer' || viewer === 'curious') && <Brief />}
+                {(viewer === 'engineer' || viewer === 'curious') && <Brief tailor={tailor} />}
               </>
             )}
           </div>

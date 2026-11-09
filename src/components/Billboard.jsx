@@ -38,7 +38,7 @@ function Ticker() {
   )
 }
 
-export default function Billboard({ onPlay, onInfo }) {
+export default function Billboard({ tailor, onPlay, onInfo }) {
   return (
     <section id="top" aria-labelledby="bill-title" className="relative isolate flex min-h-[86svh] items-end overflow-hidden pb-24 pt-28 sm:min-h-[92svh] sm:pb-32">
       {/* Poster wall: two copies side by side so the loop has no seam. */}
@@ -57,6 +57,12 @@ export default function Billboard({ onPlay, onInfo }) {
       </div>
 
       <div className="max-w-3xl px-4 sm:px-10">
+        {tailor?.company && (
+          <p data-tailored className="mb-4 inline-flex items-center gap-2 rounded-sm bg-marigold px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-night motion-safe:animate-rise">
+            <span aria-hidden="true">●</span> Prepared for {tailor.company}
+            {tailor.role && <span className="text-night/70">· {tailor.role === 'devops' ? 'junior DevOps' : tailor.role} role</span>}
+          </p>
+        )}
         <p className="motion-safe:animate-rise font-mono text-xs uppercase tracking-[0.25em] text-marigold">
           A one-person catalogue · {profile.city}
         </p>

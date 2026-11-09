@@ -4,7 +4,7 @@
  */
 import Art from './Art'
 
-const KIND = { project: 'Project', credential: 'Credential', experience: 'Experience', skill: 'Stack' }
+const KIND = { project: 'Project', credential: 'Credential', experience: 'Experience', skill: 'Stack', extra: 'Extra' }
 
 export default function TitleCard({ title, onOpen, saved }) {
   return (

@@ -11,7 +11,7 @@ import Art from './Art'
 import Value from './Value'
 import TitleCard from './TitleCard'
 
-const LABEL = { project: 'Project', credential: 'Credential', experience: 'Experience', skill: 'Stack', about: 'About' }
+const LABEL = { project: 'Project', credential: 'Credential', experience: 'Experience', skill: 'Stack', about: 'About', extra: 'Extra' }
 
 function useFocusTrap(ref, onClose) {
   useEffect(() => {

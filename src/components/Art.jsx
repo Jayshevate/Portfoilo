@@ -138,7 +138,25 @@ function Lanes({ r }) {
   )
 }
 
-const MOTIF = { 'phd-erp': Pipeline, carepilot: Graph, rentflow: Building, sensorium: Waves, bazaarlens: Lanes }
+function Screen() {
+  // This site: a browser window with rows of cards and a play button.
+  return (
+    <g>
+      <rect x="70" y="18" width="180" height="112" rx="6" fill={C.ash} stroke={C.dust} strokeWidth="1.5" />
+      <line x1="70" y1="34" x2="250" y2="34" stroke={C.line} strokeWidth="1.5" />
+      {[0, 1, 2].map((i) => (
+        <circle key={i} cx={82 + i * 9} cy="26" r="2.5" fill={i === 0 ? C.gold : C.line} />
+      ))}
+      {[0, 1].map((r) =>
+        [0, 1, 2, 3].map((c) => <rect key={`${r}${c}`} x={82 + c * 41} y={78 + r * 22} width="35" height="16" rx="2" fill={c === 1 && r === 0 ? C.gold : C.line} />),
+      )}
+      <circle cx="160" cy="56" r="14" fill={C.gold} className="art-hop" />
+      <path d="M155 49 L167 56 L155 63 Z" fill="#0d0b09" className="art-hop" />
+    </g>
+  )
+}
+
+const MOTIF = { 'phd-erp': Pipeline, carepilot: Graph, rentflow: Building, sensorium: Waves, bazaarlens: Lanes, 'this-site': Screen }
 
 /* --- the poster --- */
 

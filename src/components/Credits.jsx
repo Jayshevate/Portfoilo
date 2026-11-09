@@ -10,6 +10,7 @@
 import { useState } from 'react'
 import { profile, real } from '../content/profile'
 import Value from './Value'
+import PuneClock from './PuneClock'
 
 const KEY = import.meta.env.VITE_WEB3FORMS_KEY
 
@@ -101,6 +102,7 @@ export default function Credits() {
         <div>
           <h2 className="font-display text-5xl font-black uppercase leading-none text-cream sm:text-7xl">Roll credits</h2>
           <p className="mt-4 max-w-lg text-lg text-cream/90">{profile.cta}</p>
+          <p className="mt-2 text-sm text-dust">It's <PuneClock /> in {profile.city} right now.</p>
           <ul className="mt-6 max-w-lg">
             <Contact label="Email" value={profile.links.email} href={(u) => `mailto:${u}`} />
             <Contact label="GitHub" value={profile.links.github} />

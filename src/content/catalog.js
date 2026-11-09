@@ -5,6 +5,7 @@
  * string comes from profile.js.
  */
 import { profile, real } from './profile.js'
+import { makingOf } from './making-of.js'
 
 const projectTitle = (p) => ({
   id: p.id,
@@ -106,6 +107,7 @@ export const titles = [
   ...profile.credentials.map(credentialTitle),
   ...profile.experience.map(experienceTitle),
   ...profile.skills.map(skillTitle),
+  makingOf,
 ]
 
 // `about` can be opened (billboard "More info") and searched, but isn't in a row.
@@ -116,6 +118,7 @@ export const ROWS = {
   credentials: { name: 'Credentials', ids: titles.filter((t) => t.kind === 'credential').map((t) => t.id) },
   experience: { name: 'Experience', ids: titles.filter((t) => t.kind === 'experience').map((t) => t.id) },
   stack: { name: 'The stack', ids: titles.filter((t) => t.kind === 'skill').map((t) => t.id) },
+  extras: { name: 'Extras', ids: [makingOf.id] },
 }
 
 /*
@@ -124,9 +127,9 @@ export const ROWS = {
  * work first.
  */
 export const VIEWERS = {
-  recruiter: { label: 'Recruiter', hint: 'Credentials and experience first', rows: ['credentials', 'experience', 'projects', 'stack'] },
-  engineer: { label: 'Engineer', hint: 'The projects and the stack first', rows: ['projects', 'stack', 'credentials', 'experience'] },
-  curious: { label: 'Just looking', hint: 'The highlights', rows: ['projects', 'credentials', 'experience', 'stack'] },
+  recruiter: { label: 'Recruiter', hint: 'Credentials and experience first', rows: ['credentials', 'experience', 'projects', 'stack', 'extras'] },
+  engineer: { label: 'Engineer', hint: 'The projects and the stack first', rows: ['projects', 'extras', 'stack', 'credentials', 'experience'] },
+  curious: { label: 'Just looking', hint: 'The highlights', rows: ['projects', 'credentials', 'experience', 'stack', 'extras'] },
 }
 export const DEFAULT_VIEWER = 'recruiter'
 

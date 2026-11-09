@@ -91,6 +91,25 @@ const tests = {
     await ctx.close()
   },
 
+  async 'tailored link: greets the company, leads with their role, no picker, markup stays text'(b) {
+    const { ctx, page } = await visitor(b)
+    await page.goto(BASE + '?for=Infosys&role=security')
+    await page.locator('[data-tailored]', { hasText: 'Prepared for Infosys' }).waitFor()
+    assert(!(await page.locator('[data-gate]').isVisible()), 'picker shown on a tailored link')
+    assert((await page.title()).includes('Infosys'), 'tab title not tailored')
+    const first = await page.$eval('#brief [data-role]', (e) => e.dataset.role)
+    assert(first === 'Security', `first role card is ${first}`)
+    await page.locator('[data-clock]').first().getByText(/\d\d:\d\d/).waitFor()
+
+    let fired = false
+    page.on('dialog', async (d) => ((fired = true), d.dismiss()))
+    await page.goto(BASE + '?for=' + encodeURIComponent('<img src=x onerror=alert(1)>Evil'))
+    await page.locator('[data-tailored]').waitFor()
+    assert(!(await page.locator('[data-tailored] img').count()) && !fired, 'markup in ?for= was rendered')
+    assert(!page.errors.length, page.errors.join('\n'))
+    await ctx.close()
+  },
+
   async 'engineer gets projects first; switching viewer works'(b) {
     const { ctx, page } = await visitor(b)
     await page.goto(BASE)
@@ -107,7 +126,7 @@ const tests = {
     await page.goto(BASE)
     await page.getByRole('button', { name: /Skip — show me everything/ }).click()
     const ids = await page.$$eval('#rows [data-title]', (els) => [...new Set(els.map((e) => e.dataset.title))])
-    assert(ids.length === 17, `expected 17 titles, found ${ids.length}`)
+    assert(ids.length === 18, `expected 18 titles, found ${ids.length}`)
     for (const id of ids) {
       const card = page.locator(`#rows [data-title="${id}"]`).first()
       await card.scrollIntoViewIfNeeded()

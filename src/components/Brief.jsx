@@ -7,8 +7,9 @@ import { useState } from 'react'
 import { profile, real } from '../content/profile'
 import { fit, summary } from '../content/brief'
 import Value from './Value'
+import PuneClock from './PuneClock'
 
-export default function Brief() {
+export default function Brief({ tailor }) {
   const [copy, setCopy] = useState('Copy summary for your ATS')
   const email = real(profile.links.email)
   const resume = real(profile.links.resume)
@@ -23,8 +24,13 @@ export default function Brief() {
     setTimeout(() => setCopy('Copy summary for your ATS'), 3000)
   }
 
+  // On a tailored link, the role they're hiring for goes first.
+  const wanted = tailor?.role
+  const roles = wanted ? [...fit].sort((a, b) => (b.role.toLowerCase().includes(wanted) ? 1 : 0) - (a.role.toLowerCase().includes(wanted) ? 1 : 0)) : fit
+
   const logistics = [
     ['Location', profile.location],
+    ['Local time', <PuneClock key="clock" />],
     ['Available', profile.availability],
     ['Work mode', profile.workMode],
     ['Work authorization', profile.workAuthorization],
@@ -35,7 +41,7 @@ export default function Brief() {
       <div className="rounded-md bg-soot p-5 ring-1 ring-line sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.25em] text-marigold">For recruiters</p>
+            <p className="font-mono text-xs uppercase tracking-[0.25em] text-marigold">{tailor?.company ? `For ${tailor.company}` : 'For recruiters'}</p>
             <h2 id="brief-title" className="mt-1 font-display text-4xl font-black uppercase leading-none text-cream sm:text-5xl">
               Your 60-second brief
             </h2>
@@ -59,8 +65,11 @@ export default function Brief() {
           <div>
             <h3 className="font-mono text-[11px] uppercase tracking-[0.2em] text-dust">Why me for…</h3>
             <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-              {fit.map((f) => (
-                <li key={f.role} className="rounded-sm bg-night p-4 ring-1 ring-line">
+              {roles.map((f) => {
+                const match = wanted && f.role.toLowerCase().includes(wanted)
+                return (
+                <li key={f.role} data-role={f.role} className={`rounded-sm bg-night p-4 ring-1 ${match ? 'ring-2 ring-marigold shadow-[0_0_30px_-8px_rgba(242,162,58,.5)] sm:col-span-2' : 'ring-line'}`}>
+                  {match && <p className="mb-1 font-mono text-[11px] uppercase tracking-[0.2em] text-marigold">The role you're hiring for</p>}
                   <p className="font-display text-2xl font-bold uppercase tracking-wide text-cream">{f.role}</p>
                   <ul className="mt-2 space-y-1.5 text-sm text-dust">
                     {f.proof.map((p, i) => (
@@ -73,7 +82,8 @@ export default function Brief() {
                     ))}
                   </ul>
                 </li>
-              ))}
+                )
+              })}
             </ul>
           </div>
 
